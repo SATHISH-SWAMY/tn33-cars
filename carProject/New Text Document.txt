@@ -157,3 +157,34 @@ exports.createSplitOrder = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyC-6WmKRNCis0h5ak3Qxkt2NFCo61cXUNE",
+  authDomain: "cars33-981aa.firebaseapp.com",
+  projectId: "cars33-981aa",
+  storageBucket: "cars33-981aa.firebasestorage.app",
+  messagingSenderId: "1067764657438",
+  appId: "1:1067764657438:web:a90dbf89ccdb9e18a52d0f",
+  measurementId: "G-JGVSF3EVWS"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
