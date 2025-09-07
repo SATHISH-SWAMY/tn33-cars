@@ -1,0 +1,159 @@
+const onSubmit = async (data) => {
+  console.log(data);
+
+  try {
+    // 1. Create order on your backend
+    const orderRes = await fetch("http://localhost:8000/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: data.price * 100 }) // amount in paisa
+    });
+
+    const orderData = await orderRes.json();
+
+    if (!orderData.id) throw new Error("Failed to create payment order");
+
+    // 2. Initialize Razorpay
+    const options = {
+      key: "YOUR_RAZORPAY_KEY",
+      amount: orderData.amount,
+      currency: "INR",
+      name: "Your Company",
+      description: "SaleForm Payment",
+      order_id: orderData.id,
+      handler: async (response) => {
+        // ✅ Payment success
+        console.log("Payment success", response);
+
+        // 3. Post form data only after payment success
+        const formData = new FormData();
+
+        for (let key in data) {
+          if (key === "images") {
+            for (let i = 0; i < data.images.length; i++) {
+              formData.append("images", data.images[i]);
+            }
+          } else {
+            formData.append(key, data[key]);
+          }
+        }
+
+        // Optional: attach payment info
+        formData.append("payment_id", response.razorpay_payment_id);
+
+        const res = await fetch("http://localhost:8000/SaleForm", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to add SaleForm");
+        }
+
+        const result = await res.json();
+        console.log("Success:", result);
+        alert("SaleForm added successfully!");
+        reset();
+        setPreviews([]);
+      },
+      prefill: {
+        name: data.name,
+        contact: data.contact,
+      },
+      theme: {
+        color: "#3399cc"
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert(`Payment or submission failed: ${error.message}`);
+  }
+};
+
+
+useEffect(() => {
+  const script = document.createElement("script");
+  script.src = "https://checkout.razorpay.com/v1/checkout.js";
+  script.async = true;
+  document.body.appendChild(script);
+}, []);
+
+
+const Razorpay = require("razorpay");
+
+const razorpay = new Razorpay({
+  key_id: "YOUR_KEY_ID",
+  key_secret: "YOUR_SECRET",
+});
+
+app.post("/create-order", async (req, res) => {
+  const { amount } = req.body;
+
+  try {
+    const order = await razorpay.orders.create({
+      amount,
+      currency: "INR",
+      receipt: "receipt_order_" + Date.now(),
+    });
+
+    res.json(order);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to create Razorpay order");
+  }
+});
+
+
+
+
+
+
+
+
+const Razorpay = require("razorpay");
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET,
+});
+
+exports.createSplitOrder = async (req, res) => {
+  const { amount } = req.body; // amount in paisa (e.g., 50000 for ₹500)
+
+  try {
+    const order = await razorpay.orders.create({
+      amount,
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+      transfers: [
+        {
+          account: "acc_CLIENT_123456", // your client's Razorpay account ID
+          amount: Math.round(amount * 0.9), // 90% to client
+          currency: "INR",
+          notes: {
+            purpose: "Client Payment",
+          },
+        },
+        {
+          account: "acc_YOU_987654", // your developer Razorpay account ID
+          amount: Math.round(amount * 0.1), // 10% to you
+          currency: "INR",
+          notes: {
+            purpose: "Developer Commission",
+          },
+        },
+      ],
+    });
+
+    res.status(200).json(order);
+  } catch (err) {
+    console.error("Split order error:", err);
+    res.status(500).json({ message: "Failed to create split order" });
+  }
+};
+
