@@ -14,7 +14,7 @@ function AllCarsList() {
   const [sort, setSort] = useState("");
 
 useEffect(() => {
-  axios.get(`${import.meta.env.VITE_API_URL}/cars/get-cars`,{ withCredentials: true }) // if session needed
+  axios.get(`https://api-tn33-cars.onrender.com/cars/get-cars`,{ withCredentials: true }) // if session needed
     .then((res) => {
       console.log("Fetched cars:", res.data);
       setCars(res.data);
