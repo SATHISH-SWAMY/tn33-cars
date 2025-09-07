@@ -25,7 +25,7 @@ dotenv.config();
 const PORT = process.env.PORT || 8000;
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: 'https://tn33-cars-ui-1dfj.vercel.app', credentials: true }));
 app.use(express.json());
 app.use(express.static('uploads'));
 app.use(bodyParser.json());
